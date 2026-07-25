@@ -28,8 +28,17 @@ ROLES_STAFF_IDS = [
     1463892932053569588,  # Staff Founder
 ]
 
-# ── Rôles poules OPEN ───────────────────────
-ROLES_POULES_OPEN = []  # À remplir quand on créera les rôles de poule
+# ── Rôles de poule OPEN ─────────────────────
+ROLES_POULES_OPEN = [
+    1530609404674838689,  # Groupe A
+    1530609461578956850,  # Groupe B
+    1530609492637647009,  # Groupe C
+    1530609520571584512,  # Groupe D
+    1530609564167180410,  # Groupe E
+    1530609596702658591,  # Groupe F
+    1530609623613051030,  # Groupe G
+    1530609656962220243,  # Groupe H
+]
 
 # ── Rôles phases finales ────────────────────
 ROLE_PHASE_FINALE_OPEN_ID = None  # À créer
