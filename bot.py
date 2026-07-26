@@ -153,9 +153,22 @@ async def creer_salons_tournoi(tournoi_id: str, tournoi: dict):
         await guild.create_text_channel(f"🎯・groupe-{lettre.lower()}", category=categorie, overwrites=ow_poule)
         await guild.create_text_channel(f"📅・matchs-groupe-{lettre.lower()}", category=categorie, overwrites=ow_poule_ro)
 
-    # Phases finales
-    await guild.create_text_channel("🏆・phases-finales", category=categorie, overwrites=overwrites)
-    await guild.create_text_channel("📅・matchs-phases-finales", category=categorie, overwrites=overwrites_ro)
+    # Phases finales — visible uniquement par @Phase Finale + staff
+    role_pf = guild.get_role(ROLE_PHASE_FINALE_OPEN_ID)
+    ow_pf = {guild.default_role: discord.PermissionOverwrite(view_channel=False)}
+    for sid in ROLES_STAFF_IDS:
+        r = guild.get_role(sid)
+        if r:
+            ow_pf[r] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+    if role_pf:
+        ow_pf[role_pf] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+
+    ow_pf_ro = dict(ow_pf)
+    if role_pf:
+        ow_pf_ro[role_pf] = discord.PermissionOverwrite(view_channel=True, send_messages=False)
+
+    await guild.create_text_channel("🏆・phases-finales", category=categorie, overwrites=ow_pf)
+    await guild.create_text_channel("📅・matchs-phases-finales", category=categorie, overwrites=ow_pf_ro)
     await guild.create_text_channel("📊・resultats", category=categorie, overwrites=overwrites_ro)
 
     # Loge Casteur uniquement (pas de vocaux diffusion, spectateur ingame)
