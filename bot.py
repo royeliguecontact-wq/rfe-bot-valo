@@ -128,28 +128,37 @@ async def creer_salons_tournoi(tournoi_id: str, tournoi: dict):
     # Salons généraux
     annonces = await guild.create_text_channel("📋・annonces-tournoi", category=categorie, overwrites=overwrites_ro)
     await guild.create_text_channel("📊・matchs-general", category=categorie, overwrites=overwrites_ro)
-    await guild.create_text_channel("📺・liens-stream", category=categorie, overwrites=overwrites)
     await guild.create_text_channel("🛡️・tournoi-log", category=categorie, overwrites=overwrites_staff)
 
-    # Salons par groupe Swiss
+    # Salons par groupe Swiss — visible uniquement par la poule concernée
     nb_groupes = max(2, nb_equipes // 4)
     for i in range(min(nb_groupes, 8)):
         lettre = LETTRES_GROUPES[i]
         role_poule = guild.get_role(ROLES_POULES_OPEN[i]) if i < len(ROLES_POULES_OPEN) else None
-        ow_poule = dict(overwrites_ro)
+
+        # Permissions : staff + role poule uniquement
+        ow_poule = {guild.default_role: discord.PermissionOverwrite(view_channel=False)}
+        for sid in ROLES_STAFF_IDS:
+            r = guild.get_role(sid)
+            if r:
+                ow_poule[r] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
         if role_poule:
             ow_poule[role_poule] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+
+        # Matchs en lecture seule pour la poule
+        ow_poule_ro = dict(ow_poule)
+        if role_poule:
+            ow_poule_ro[role_poule] = discord.PermissionOverwrite(view_channel=True, send_messages=False)
+
         await guild.create_text_channel(f"🎯・groupe-{lettre.lower()}", category=categorie, overwrites=ow_poule)
-        await guild.create_text_channel(f"📅・matchs-groupe-{lettre.lower()}", category=categorie, overwrites=overwrites_ro)
+        await guild.create_text_channel(f"📅・matchs-groupe-{lettre.lower()}", category=categorie, overwrites=ow_poule_ro)
 
     # Phases finales
     await guild.create_text_channel("🏆・phases-finales", category=categorie, overwrites=overwrites)
     await guild.create_text_channel("📅・matchs-phases-finales", category=categorie, overwrites=overwrites_ro)
     await guild.create_text_channel("📊・resultats", category=categorie, overwrites=overwrites_ro)
 
-    # Vocaux
-    await guild.create_voice_channel("📺 Diffusion Match 1", category=categorie, overwrites=overwrites)
-    await guild.create_voice_channel("📺 Diffusion Match 2", category=categorie, overwrites=overwrites)
+    # Loge Casteur uniquement (pas de vocaux diffusion, spectateur ingame)
     await guild.create_voice_channel("🎙️ Loge Casteur", category=categorie, overwrites=overwrites_staff)
 
     # Annonce
